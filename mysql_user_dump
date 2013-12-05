@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+#-----------------------------------------
+# Name:        mysql_user_dump.py
+# Purpose:     批量导出mysql.user用户迁移
+#-----------------------------------------
+import MySQLdb
+def get_data(conn):
+    query  = 'select user,host from mysql.user order by user'
+    cursor = conn.cursor()
+    cursor.execute(query)
+    lines  = cursor.fetchall()
+    return lines
+def output_data(conn,rows):
+    for user,host in rows:
+        query  = "show grants for '%s'@'%s'" %(user,host)
+        cursor = conn.cursor()
+        cursor.execute(query)
+        show_pri = cursor.fetchall()
+        for grants_command in show_pri:
+            print ''.join(grants_command)+';'
+        print ''
+if __name__ =='__main__':
+    conn = MySQLdb.connect(host='localhost',user='root',passwd='123456',db='mysql',
+port=3306,charset='utf8')
+    rows  = get_data(conn)
+    output_data(conn,rows)
